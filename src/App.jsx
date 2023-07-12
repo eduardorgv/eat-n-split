@@ -1,35 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { initialFriends } from "./Data/initialData";
+import {
+  Button,
+  FriendsList,
+  FormAddFriend,
+  FormSplitBill,
+} from "./components";
+import { useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [friends, setFriends] = useState(initialFriends);
+  const [showAddFriend, setShowAddFriend] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState(null);
+
+  const handleShowAddFriend = () => {
+    setShowAddFriend((show) => !show);
+  };
+
+  const handleAddFriend = (friend) => {
+    setFriends((friends) => [...friends, friend]);
+    setShowAddFriend(false);
+  };
+
+  const handleSelection = (friend) => {
+    setSelectedFriend((curr) => curr?.id === friend?.id ? null : friend);
+    setShowAddFriend(false);
+  };
+
+  const handleSplitBill = (value) => {
+    setFriends((friends) =>
+      friends.map((friend) =>
+        friend.id === selectedFriend.id
+          ? {...friend, balance: friend.balance + value}
+          : friend
+      )
+    )
+    setSelectedFriend(null);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app">
+      <div className="sidebar">
+        <FriendsList 
+          friends={friends} 
+          selectedFriend={selectedFriend}
+          onSelection={handleSelection} 
+        />
+        {showAddFriend && <FormAddFriend onAddFriend={handleAddFriend} />}
+        <Button onClick={handleShowAddFriend}>
+          {showAddFriend ? "Close" : "Add friend"}
+        </Button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+
+      {selectedFriend && (
+        <FormSplitBill 
+          selectedFriend={selectedFriend} 
+          onSplitBill={handleSplitBill}
+        />
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
